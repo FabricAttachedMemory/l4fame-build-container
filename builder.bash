@@ -151,7 +151,7 @@ set_kernel_config () {
     git config --global user.email "example@example.com";
     git config --global user.name "l4fame-build-container";
     if [[ $(ls /proc | wc -l) -gt 0 ]]; then
-        cp config.l4fame .config;
+        cp config.amd64-l4fame .config;
     else
         yes '' | make oldconfig;
     fi
