@@ -121,6 +121,9 @@ get_update_path () {
         # Check if the repository needs to be cloned, then clone
         if [ ! -d "$path"  ]; then
             git clone "$1";
+            for branch in $(cd $path && git branch -r | grep -v HEAD | cut -d'/' -f2); do
+                (cd $path && git checkout $branch -- &>/dev/null);
+            done
             BUILD=true;
         else
             # Get only the branches that need to be updated
