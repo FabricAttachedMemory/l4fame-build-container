@@ -123,14 +123,15 @@ get_update_path () {
             git clone "$1";
             BUILD=true;
         else
-            # Check if any branch in the repository needs to be updated, then update
-            for branch in $(cd $path && git branch -r | grep -v HEAD | cut -d'/' -f2); do
-                (cd $path && git checkout $branch -- &>/dev/null);
-                ANS=$(cd $path && git pull);
-                if [[ "$ANS" =~ "Updating" ]]; then
-                    BUILD=true;
-                fi
-            done
+            # Get only the branches that need to be updated
+            FETCH=$(cd $path && git fetch -a 2>&1 | tail -n +2)
+            if [ "$FETCH" ]; then
+                BUILD=true;
+                for branch in $(echo "$FETCH" | cut -d'>' -f2 | cut -d'/' -f2-); do
+                    echo "Updating branch: $branch"
+                    (cd $path && git checkout $branch -- && git merge) &>/dev/null;
+                done
+            fi
         fi
     else
         # Check if docker marked the repository as needing a rebuild
@@ -182,7 +183,7 @@ if [[ $(ls /proc | wc -l) -gt 0 ]]; then
     cp "$0" /arm64/stretch;
 fi
 
-# Change into build directory and set the configuration files
+# Change into the build directory and set the configuration files
 cd /build;
 set_gbp_config;
 set_debuild_config;
