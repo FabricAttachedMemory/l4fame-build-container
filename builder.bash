@@ -123,6 +123,7 @@ get_update_path () {
             git clone "$1";
             for branch in $(cd $path && git branch -r | grep -v HEAD | cut -d'/' -f2); do
                 (cd $path && git checkout $branch -- &>/dev/null);
+                (cd $path && git checkout HEAD -- &>/dev/null);
             done
             BUILD=true;
         else
@@ -200,7 +201,7 @@ get_update_path https://github.com/FabricAttachedMemory/tm-librarian.git;
 ( $BUILD ) && ( cd $path && run_update && gbp buildpackage );
 
 get_update_path https://github.com/FabricAttachedMemory/tm-manifesting.git;
-( $BUILD ) && ( cd $path && run_update && gbp buildpackage --git-upstream-branch=master --git-upstream-tree=branch );
+( $BUILD ) && ( cd $path && run_update && gbp buildpackage --git-upstream-branch=master --git-upstream-tree=branch --git-cleaner=/bin/true);
 
 get_update_path https://github.com/FabricAttachedMemory/l4fame-node.git;
 ( $BUILD ) && ( cd $path && run_update && gbp buildpackage );
