@@ -196,7 +196,7 @@ set_debuild_config;
 
 fix_nvml_rules;
 get_update_path https://github.com/FabricAttachedMemory/nvml.git;
-( $BUILD ) && ( cd $path && run_update && gbp buildpackage --git-prebuild='mv -f /tmp/rules debian/rules' );
+( $BUILD ) && ( cd $path && run_update && gbp buildpackage --git-postexport='mv -f /tmp/rules debian/rules' );
 
 get_update_path https://github.com/FabricAttachedMemory/tm-librarian.git;
 ( $BUILD ) && ( cd $path && run_update && gbp buildpackage );
@@ -227,7 +227,7 @@ cp /gbp-build-area/*.deb /deb;
 cp /gbp-build-area/*.changes /deb;
 
 
-# Build with config.l4fame in docker and oldconfig in chroot
+# Build with config.amd64-l4fame in docker and oldconfig in chroot
 get_update_path https://github.com/FabricAttachedMemory/linux-l4fame.git;
 if $BUILD; then
     ( cd $path && set_kernel_config; make -j$CORES deb-pkg && \
