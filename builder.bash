@@ -19,6 +19,7 @@ cat <<EOF > $HOME/.gbp.conf
 [DEFAULT]
 cleaner = fakeroot debian/rules clean
 ignore-new = True
+force-create = True
 
 [buildpackage]
 export-dir = /gbp-build-area/
@@ -49,9 +50,9 @@ set_debuild_config () {
         rm -r $HOME/.gnupg;
         gpg --import /keyfile.key;
         GPGID=$(gpg -K | grep uid | cut -d] -f2);
-        echo "DEBUILD_DPKG_BUILDPACKAGE_OPTS=\"-k'$GPGID' -b -i -j$CORES\"" > $HOME/.devscripts;
+        echo "DEBUILD_DPKG_BUILDPACKAGE_OPTS=\"-k'$GPGID' -i -j$CORES\"" > $HOME/.devscripts;
     else
-        echo "DEBUILD_DPKG_BUILDPACKAGE_OPTS=\"-us -uc -b -i -j$CORES\"" > $HOME/.devscripts;
+        echo "DEBUILD_DPKG_BUILDPACKAGE_OPTS=\"-us -uc -i -j$CORES\"" > $HOME/.devscripts;
     fi
 }
 
@@ -147,6 +148,7 @@ get_update_path () {
     fi
 }
 
+
 # Set .config file for amd64 and arm64, then remove the dirty kernel build messages
 set_kernel_config () {
     git config --global user.email "example@example.com";
@@ -158,6 +160,13 @@ set_kernel_config () {
     fi
     git add . ;
     git commit -a -s -m "Removing -dirty";
+}
+
+
+# Remove build information and then copy produced packages to the external deb folder
+copy_built_packages () {
+    rm -f /gbp-build-area/*.build*;
+    cp /gbp-build-area/* /deb;
 }
 
 
@@ -196,7 +205,7 @@ set_debuild_config;
 
 fix_nvml_rules;
 get_update_path https://github.com/FabricAttachedMemory/nvml.git;
-( $BUILD ) && ( cd $path && run_update && gbp buildpackage --git-postexport='mv -f /tmp/rules debian/rules' );
+( $BUILD ) && ( cd $path && run_update && gbp buildpackage --git-postexport='mv -f /tmp/rules debian/rules' --git-upstream-tree=branch --git-upstream-branch=debian );
 
 get_update_path https://github.com/FabricAttachedMemory/tm-librarian.git;
 ( $BUILD ) && ( cd $path && run_update && gbp buildpackage );
@@ -211,7 +220,7 @@ get_update_path https://github.com/FabricAttachedMemory/l4fame-manager.git;
 ( $BUILD ) && ( cd $path && run_update && gbp buildpackage );
 
 get_update_path https://github.com/FabricAttachedMemory/tm-hello-world.git;
-( $BUILD ) && ( cd $path && run_update && gbp buildpackage );
+( $BUILD ) && ( cd $path && run_update && gbp buildpackage --git-upstream-tree=branch --git-upstream-branch=debian);
 
 get_update_path https://github.com/FabricAttachedMemory/tm-libfuse.git;
 ( $BUILD ) && ( cd $path && run_update && gbp buildpackage );
@@ -222,9 +231,7 @@ get_update_path https://github.com/FabricAttachedMemory/libfam-atomic.git;
 get_update_path https://github.com/FabricAttachedMemory/Emulation.git;
 ( $BUILD ) && ( cd $path && run_update && gbp buildpackage --git-upstream-branch=master );
 
-# Copy all the built .deb's to the external deb folder
-cp /gbp-build-area/*.deb /deb;
-cp /gbp-build-area/*.changes /deb;
+copy_built_packages;
 
 
 # Build with config.amd64-l4fame in docker and oldconfig in chroot
@@ -239,8 +246,7 @@ if $BUILD; then
     mv -f /build/linux*.* /gbp-build-area;
     # Sign the linux*.changes file if applicable
     [ "$GPGID" ] && ( echo "n" | debsign -k"$GPGID" /gbp-build-area/linux*.changes );
-    cp /gbp-build-area/*.deb /deb;
-    cp /gbp-build-area/*.changes /deb;
+    copy_built_packages;
 fi
 
 # Change into the chroot and run this script
