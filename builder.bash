@@ -6,9 +6,6 @@ apt-get install -y libssl-dev bc kmod cpio pkg-config build-essential;
 if [[ $(ls /proc | wc -l) -gt 0 ]]; then
     # Only needed in the docker container
     apt-get install -y debootstrap qemu qemu-user-static;
-else
-    # Only needed in the arm64 chroot
-    apt-get install -y linux-image-arm64;
 fi
 
 
