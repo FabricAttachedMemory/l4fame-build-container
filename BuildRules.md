@@ -11,7 +11,7 @@ apt-get install git-buildpackage
 
 Add the following configuration to `~/.devscripts`.
 ```shell
-DEBUILD_DPKG_BUILDPACKAGE_OPTS="-us -uc -i -b"
+DEBUILD_DPKG_BUILDPACKAGE_OPTS="-us -uc -i"
 ```
 
 Add the following configuration to `~/.gbp.conf`.
@@ -19,9 +19,10 @@ Add the following configuration to `~/.gbp.conf`.
 [DEFAULT]
 cleaner = fakeroot debian/rules clean
 ignore-new = True
+force-create = True
 
 [buildpackage]
-export-dir = ../build-area/
+export-dir = /gbp-build-area/
 
 [git-import-orig]
 dch = False
@@ -56,7 +57,7 @@ apt-get install uuid-dev
 2. Checkout `upstream`, then checkout `debian`.
 3. Build with 
 ```shell
-gbp buildpackage
+gbp buildpackage --git-upstream-tree=branch --git-upstream-branch=debian
 ```
 
 **Note**
@@ -91,7 +92,7 @@ EOF
 echo -e "$rule" > /tmp/rules
 chmod +x /tmp/rules
 
-gbp buildpackage --git-prebuild='mv /tmp/rules debian/rules'
+gbp buildpackage --git-prebuild='mv /tmp/rules debian/rules' --git-upstream-tree=branch --git-upstream-branch=debian
 ```
 
 ---
@@ -130,7 +131,7 @@ apt-get install dh-exec
 1. Clone [this repository](https://github.com/keith-packard/tm-manifesting.git).
 2. Build with 
 ```shell
-gbp buildpackage --git-upstream-branch=master --git-upstream-tree=branch
+gbp buildpackage --git-upstream-branch=master --git-upstream-tree=branch --git-cleaner=/bin/true
 ```
 
 ---
@@ -182,7 +183,7 @@ tm-hello-world_[version].deb
 2. Checkout `debian`.
 3. Build with
 ```shell
-gbp buildpackage
+gbp buildpackage --git-upstream-tree=branch --git-upstream-branch=debian
 ```
 
 ---
