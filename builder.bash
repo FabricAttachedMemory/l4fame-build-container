@@ -122,8 +122,8 @@ get_update_path () {
             # Ensure that each branch is available to gbp
             for branch in $(cd $path && git branch -r | grep -v HEAD | cut -d'/' -f2); do
                 (cd $path && git checkout $branch -- &>/dev/null);
-                (cd $path && git checkout $(git branch -r | grep HEAD | cut -d'/' -f3) -- &>/dev/null);
             done
+            (cd $path && git checkout $(git branch -r | grep HEAD | cut -d'/' -f3) -- &>/dev/null);
             BUILD=true;
         else
             # Get only the branches that need to be updated
